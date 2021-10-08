@@ -13,13 +13,17 @@
 #include <time.h>                       // time() ctime()
 #include <sys/time.h>                   // struct timeval
 #include <coredecls.h>                  // settimeofday_cb()
-#include <TZ.h>
 
-//#define DST_MN	TZ_Europe_Kiev * 60	// 180	// use 60mn for summer time in some countries  
+#define TZ		3		// (utc+) TZ in hours // TZ_Europe_Kiev in #include <TZ.h>
+#define DST_MN	TZ * 60	// 180	// use 60mn for summer time in some countries  
+#define DST_SEC	((DST_MN)*60)
 
 time_t nowTime;
 struct tm* nowTimeInfo;
 #pragma endregion
+
+#include <ESPWiFi.h>
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
 #pragma region init TFT
 #if defined(ARDUINO_FEATHER_ESP32) // Feather Huzzah32
@@ -86,6 +90,7 @@ float p = 3.1415926;
 void setup(void) {
 	Serial.begin(9600);
 	Serial.print(F("Hello! ST77xx TFT Test"));
+	InitWifi();
 	//InitTime();
 	InitPorts();
 
@@ -125,6 +130,79 @@ void loop() {
 
 		
 	}
+}
+
+// gets called when WiFiManager enters configuration mode
+void configModeCallback(WiFiManager* myWiFiManager) {
+	Serial.println("Entered config mode");
+	Serial.println(WiFi.softAPIP());
+	// if you used auto generated SSID, print it
+	Serial.println(myWiFiManager->getConfigPortalSSID());
+
+	// ticker.attach(0.2, tick); // entered config mode, make led toggle faster
+}
+
+void InitWifi() {
+	/*WiFi.begin(WIFI_SSID, WIFI_PWD);*/
+	WiFi.mode(WIFI_OFF);        //Prevents reconnection issue (taking too long to connect)
+	delay(1000);
+	WiFi.mode(WIFI_STA);        //Only Station No AP, This line hides the viewing of ESP as wifi hotspot
+	WiFi.setAutoReconnect(true);
+	// WiFi.begin(ssid, password);     //Connect to your WiFi router
+	Serial.println("Connecting to WIFI...");
+	//while (WiFi.status() != WL_CONNECTED) {
+	//	delay(500);
+	//	Serial.print(".");
+	//}
+
+	//Serial.println("");
+	//Serial.print("Connected to ");
+	//Serial.println(ssid);
+	//Serial.print("IP address: ");
+	//Serial.println(WiFi.localIP());  //IP address assigned to your ESP
+
+	WiFiManager wm;	// Local intialization. Once its business is done, there is no need to keep it around
+	//if (digitalRead(MainButtonPin) == LOW) {
+	//	wm.resetSettings();	// reset settings
+	//}
+	wm.setAPCallback(configModeCallback); // set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+	wm.setTimeout(120);
+
+	// This is sometimes necessary, it is still unknown when and why this is needed but it may solve some race condition or bug in esp SDK/lib
+	wm.setCleanConnect(true); // disconnect before connect, clean connect
+
+	// fetches ssid and pass and tries to connect
+	// if it does not connect it starts an access point with the specified name
+	// and goes into a blocking loop awaiting configuration
+	if (!wm.autoConnect("Lexus_IPS_Tube_Clock", "1122334455")) {
+		// This is sometimes necessary, it is still unknown when and why this is needed but it may solve some race condition or bug in esp SDK/lib
+		wm.setCleanConnect(true); // disconnect before connect, clean connect
+
+		Serial.println("failed to connect and hit timeout");
+		delay(1000);
+		ESP.restart(); // reset and try again, or maybe put it to deep sleep
+		delay(1000);
+	}
+
+	Serial.println("connected... yeey :)"); // if you get here you have connected to the WiFi
+
+	//int counter = 0;
+	//while (WiFi.status() != WL_CONNECTED) {
+	//	delay(500);
+	//	//Serial.print(".");
+	//	display.clear();
+	//	display.drawString(64, 10, "Connecting to WiFi");
+	//	display.drawXbm(46, 30, 8, 8, counter % 3 == 0 ? activeSymbole : inactiveSymbole);
+	//	display.drawXbm(60, 30, 8, 8, counter % 3 == 1 ? activeSymbole : inactiveSymbole);
+	//	display.drawXbm(74, 30, 8, 8, counter % 3 == 2 ? activeSymbole : inactiveSymbole);
+	//	display.display();
+
+	//	counter++;
+	//}
+
+	// configTime(TZ_SEC, DST_SEC, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+	// configTime(TZ_Etc_GMTp3, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+	configTime(TZ, DST_SEC, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
 }
 
 void InitTime() {
