@@ -86,9 +86,8 @@ float p = 3.1415926;
 
 void setup(void) {
 	Serial.begin(9600);
-Serial.print(F("Hello! ST77xx TFT Test"));
+	Serial.print(F("Hello! ST77xx TFT Test"));
 	InitPorts();
-
 
 	// Use this initializer if using a 1.8" TFT screen:
 	//tft0.initR(INITR_BLACKTAB);      // Init ST7735S chip, black tab
@@ -181,13 +180,13 @@ void loop() {
 
 	if (millis() - timeDateChange > timeDateChangeIntervalMillis) {
 		timeDateChange = millis();
-		/*drawMatrix();*/
-		digitalWrite(TFT0_CS, !digitalRead(TFT0_CS));
+		/* code */
+		/*digitalWrite(TFT0_CS, !digitalRead(TFT0_CS));
 		digitalWrite(TFT1_CS, !digitalRead(TFT1_CS));
 		digitalWrite(TFT2_CS, !digitalRead(TFT2_CS));
 		digitalWrite(TFT3_CS, !digitalRead(TFT3_CS));
 		digitalWrite(TFT4_CS, !digitalRead(TFT4_CS));
-		digitalWrite(TFT5_CS, !digitalRead(TFT5_CS));
+		digitalWrite(TFT5_CS, !digitalRead(TFT5_CS));*/
 
 		digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 	}
@@ -201,12 +200,13 @@ void InitTime() {
 }
 
 void InitPorts() {
-	pinMode(TFT0_CS, OUTPUT);
+	pinMode(LED_BUILTIN, OUTPUT);
+	/*pinMode(TFT0_CS, OUTPUT);
 	pinMode(TFT1_CS, OUTPUT);
 	pinMode(TFT2_CS, OUTPUT);
 	pinMode(TFT3_CS, OUTPUT);
 	pinMode(TFT4_CS, OUTPUT);
-	pinMode(TFT5_CS, OUTPUT);
+	pinMode(TFT5_CS, OUTPUT);*/
 }
 
 void testlines(uint16_t color) {
