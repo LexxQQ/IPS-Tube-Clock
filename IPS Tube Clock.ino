@@ -42,6 +42,7 @@
  //#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>
+#include "Settings.h"
 
 #if defined(ARDUINO_FEATHER_ESP32) // Feather Huzzah32
 #define TFT_CS         14
