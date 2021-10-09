@@ -21,4 +21,5 @@ String OPEN_WEATHER_MAP_LOCATION_ID = "711660";	// Boryspil, UA
 // Chinese Simplified - zh_cn, Chinese Traditional - zh_tw.
 String OPEN_WEATHER_MAP_LANGUAGE = "ua";
 
-#define TZ		3		// (utc+) TZ in hours
+#include <TZ.h>
+#define Timezone			TZ_Europe_Kiev		// (utc+) TZ in hours //  in 

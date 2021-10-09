@@ -14,9 +14,8 @@
 #include <sys/time.h>                   // struct timeval
 #include <coredecls.h>                  // settimeofday_cb()
 
-#define TZ		3		// (utc+) TZ in hours // TZ_Europe_Kiev in #include <TZ.h>
-#define DST_MN	TZ * 60	// 180	// use 60mn for summer time in some countries  
-#define DST_SEC	((DST_MN)*60)
+#define Timezone_min		Timezone * 60	// 180	// use 60mn for summer time in some countries  
+#define DaylightOffset_sec	Timezone_min * 60
 
 time_t nowTime;
 struct tm* nowTimeInfo;
@@ -91,7 +90,7 @@ void setup(void) {
 	Serial.begin(9600);
 	Serial.print(F("Hello! ST77xx TFT Test"));
 	InitWifi();
-	//InitTime();
+	InitTime();
 	InitPorts();
 
 	// initializer 1.14" 240x135 TFT:
@@ -107,15 +106,15 @@ void setup(void) {
 	/*uint16_t time = millis();
 	tft0.fillScreen(ST77XX_BLACK);
 	time = millis() - time;
-	
+
 	Serial.println(time, DEC);
 	delay(500);*/
-	
+
 	Serial.println("done");
 	delay(1000);
 }
 
-void loop() {	
+void loop() {
 	if (millis() - timeDateChange > timeDateChangeIntervalMillis) {
 		timeDateChange = millis();
 		/* code */
@@ -128,7 +127,13 @@ void loop() {
 		digitalWrite(TFT4_CS, !digitalRead(TFT4_CS));
 		//digitalWrite(TFT5_CS, !digitalRead(TFT5_CS));
 
-		
+		InitTime();
+
+		Serial.print(nowTimeInfo->tm_hour);
+		Serial.print(":");
+		Serial.print(nowTimeInfo->tm_min);
+		Serial.print(":");
+		Serial.println(nowTimeInfo->tm_sec);
 	}
 }
 
@@ -198,18 +203,16 @@ void InitWifi() {
 	//	display.display();
 
 	//	counter++;
-	//}
-
-	// configTime(TZ_SEC, DST_SEC, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
-	// configTime(TZ_Etc_GMTp3, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
-	configTime(TZ, DST_SEC, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+	//}	
 }
 
 void InitTime() {
+	// configTime(TZ_SEC, DST_SEC, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+	// configTime(TZ_Etc_GMTp3, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+	configTime(Timezone, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+
 	nowTime = time(nullptr);
 	nowTimeInfo = localtime(&nowTime);
-
-	// nowTimeInfo->tm_year
 }
 
 void InitPorts() {
