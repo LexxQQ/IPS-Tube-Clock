@@ -4,12 +4,11 @@
 	Author:     ELEMENTS\VitaliyN
 */
 
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
-#include <SPI.h>
 #include "Settings.h"
+//#include "Images.h"
+#include "iv-2.h"
 
-#pragma region init time
+#pragma region time
 #include <time.h>                       // time() ctime()
 #include <sys/time.h>                   // struct timeval
 #include <coredecls.h>                  // settimeofday_cb()
@@ -21,62 +20,14 @@ time_t nowTime;
 struct tm* nowTimeInfo;
 #pragma endregion
 
+#pragma region wifi
 #include <ESPWiFi.h>
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager  
+#pragma endregion
 
-#pragma region init TFT
-#if defined(ARDUINO_FEATHER_ESP32) // Feather Huzzah32
-#define TFT_CS         14
-#define TFT_RST        15
-#define TFT_DC         32
-
-#elif defined(ESP8266)
-#define TFT0_CS         1U	// Chip selection
-#define TFT1_CS         3U	// Chip selection
-#define TFT2_CS         5U	// Chip selection
-#define TFT3_CS         4U	// Chip selection
-#define TFT4_CS         0U	// Chip selection
-#define TFT5_CS         2U	// Chip selection
-
-#define TFT_DC         D0	// Data|Command
-#define TFT_RST        A0	// Reset
-
-// CLK	PIN_SPI_SCK
-// MOSI	PIN_SPI_MOSI
-
-#else
-// For the breakout board, you can use any 2 or 3 pins.
-// These pins will also work for the 1.8" TFT shield.
-#define TFT_CS        10
-#define TFT_RST        9 // Or set to -1 and connect to Arduino RESET pin
-#define TFT_DC         8
-#endif
-
-// OPTION 1 (recommended) is to use the HARDWARE SPI pins, which are unique to each board and not reassignable.
-// For Arduino Uno: MOSI = pin 11 and SCLK = pin 13.
-// This is the fastest mode of operation and is required if using the breakout board's microSD card.
-
-// For 1.44" and 1.8" TFT with ST7735 use:
-//Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-
-// For 1.14", 1.3", 1.54", 1.69", and 2.0" TFT with ST7789:
-//Adafruit_ST7789 tft0 = Adafruit_ST7789(TFT0_CS, TFT_DC, TFT_RST);
-//Adafruit_ST7789 tft1 = Adafruit_ST7789(TFT1_CS, TFT_DC, TFT_RST);
-Adafruit_ST7789 tft2 = Adafruit_ST7789(TFT2_CS, TFT_DC, TFT_RST);
-//Adafruit_ST7789 tft3 = Adafruit_ST7789(TFT3_CS, TFT_DC, TFT_RST);
-//Adafruit_ST7789 tft4 = Adafruit_ST7789(TFT4_CS, TFT_DC, TFT_RST);
-//Adafruit_ST7789 tft5 = Adafruit_ST7789(TFT5_CS, TFT_DC, TFT_RST);
-
-// OPTION 2 lets you interface the display using ANY TWO or THREE PINS,
-// tradeoff being that performance is not as fast as hardware SPI above.
-//#define TFT_MOSI 11  // Data out
-//#define TFT_SCLK 13  // Clock out
-
-// For ST7735-based displays, we will use this call
-//Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
-
-// OR for the ST7789-based displays, we will use this call
-//Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);  
+#pragma region TFT
+#include <TFT_eSPI.h>
+TFT_eSPI tft = TFT_eSPI();
 #pragma endregion
 
 #pragma region timers
@@ -84,56 +35,42 @@ long timeDateChange = 0;
 const long timeDateChangeIntervalMillis = 1 * 1000L; // sec * 1000L
 #pragma endregion
 
-float p = 3.1415926;
-
 void setup(void) {
 	Serial.begin(9600);
-	Serial.print(F("Hello! ST77xx TFT Test"));
-	InitWifi();
-	InitTime();
+	Serial.print(F("IPS Tube Clock - sutup..."));
+
 	InitPorts();
 
-	// initializer 1.14" 240x135 TFT:
-	//tft0.init(240, 240);           // Init ST7789 240x135
+	InitTft();
 
-	// SPI speed defaults to SPI_DEFAULT_FREQ defined in the library, you can override it here
-	// Note that speed allowable depends on chip and quality of wiring, if you go too fast, you
-	// may end up with a black screen some times, or all the time.
-	//tft0.setSPISpeed(40000000);
-
-	Serial.println(F("Initialized"));
-
-	/*uint16_t time = millis();
-	tft0.fillScreen(ST77XX_BLACK);
-	time = millis() - time;
-
-	Serial.println(time, DEC);
-	delay(500);*/
+	InitWifi();
 
 	Serial.println("done");
 	delay(1000);
 }
 
+uint16_t digit = 1;
+
 void loop() {
 	if (millis() - timeDateChange > timeDateChangeIntervalMillis) {
 		timeDateChange = millis();
 		/* code */
-		digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-
-		//digitalWrite(TFT0_CS, !digitalRead(TFT0_CS));
-		//digitalWrite(TFT1_CS, !digitalRead(TFT1_CS));
-		digitalWrite(TFT2_CS, !digitalRead(TFT2_CS));
-		digitalWrite(TFT3_CS, !digitalRead(TFT3_CS));
-		digitalWrite(TFT4_CS, !digitalRead(TFT4_CS));
-		//digitalWrite(TFT5_CS, !digitalRead(TFT5_CS));
-
-		InitTime();
+		RefreshTime();
 
 		Serial.print(nowTimeInfo->tm_hour);
 		Serial.print(":");
 		Serial.print(nowTimeInfo->tm_min);
 		Serial.print(":");
 		Serial.println(nowTimeInfo->tm_sec);
+
+		if (digit++ >= 9) {
+			digit = 1;
+		}
+
+		tft.pushImage(0, 0, 135, 240, getDigitImage(digit));
+
+
+
 	}
 }
 
@@ -206,7 +143,7 @@ void InitWifi() {
 	//}	
 }
 
-void InitTime() {
+void RefreshTime() {
 	// configTime(TZ_SEC, DST_SEC, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
 	// configTime(TZ_Etc_GMTp3, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
 	configTime(Timezone, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
@@ -217,10 +154,54 @@ void InitTime() {
 
 void InitPorts() {
 	pinMode(LED_BUILTIN, OUTPUT);
-	//pinMode(TFT0_CS, OUTPUT);
-	//pinMode(TFT1_CS, OUTPUT);
-	pinMode(TFT2_CS, OUTPUT);
-	pinMode(TFT3_CS, OUTPUT);
-	pinMode(TFT4_CS, OUTPUT);
-	//pinMode(TFT5_CS, OUTPUT);
+}
+
+void InitTft() {
+	analogWrite(LED_BUILTIN, TFT_BRIGHTNESS); // 0-255
+
+	tft.begin();     // initialize a ST7789 chip
+	tft.setSwapBytes(true); // Swap the byte order for pushImage() - corrects endianness
+
+	tft.fillScreen(TFT_BLACK);
+
+	/*tft.pushImage(0, 0, 240, 240, girls);*/
+}
+
+const uint16_t* getDigitImage(uint16_t digit) {
+	switch (digit)
+	{
+	/*case 0:
+		return dig_0;*/
+
+	case 1:
+		return dig_1;
+
+	case 2:
+		return dig_2;
+
+	case 3:
+		return dig_3;
+
+	case 4:
+		return dig_4;
+
+	case 5:
+		return dig_5;
+
+	case 6:
+		return dig_6;
+
+	case 7:
+		return dig_7;
+
+	case 8:
+		return dig_8;
+
+	case 9:
+		return dig_9;
+
+	default:
+		return dig_8;
+		break;
+	}
 }
