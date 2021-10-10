@@ -5,17 +5,8 @@
 */
 
 #include "Settings.h"
-#include "Images.h"
-
-#pragma region TFT
-#include <TFT_eSPI.h>
-TFT_eSPI tft = TFT_eSPI();
-#pragma endregion
-
-#pragma region wifi
-#include <ESPWiFi.h>
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager  
-#pragma endregion
+//#include "Images.h"
+#include "iv-2.h"
 
 #pragma region time
 #include <time.h>                       // time() ctime()
@@ -27,6 +18,16 @@ TFT_eSPI tft = TFT_eSPI();
 
 time_t nowTime;
 struct tm* nowTimeInfo;
+#pragma endregion
+
+#pragma region wifi
+#include <ESPWiFi.h>
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager  
+#pragma endregion
+
+#pragma region TFT
+#include <TFT_eSPI.h>
+TFT_eSPI tft = TFT_eSPI();
 #pragma endregion
 
 #pragma region timers
@@ -43,10 +44,12 @@ void setup(void) {
 	InitTft();
 
 	InitWifi();
-	
+
 	Serial.println("done");
 	delay(1000);
 }
+
+uint16_t digit = 1;
 
 void loop() {
 	if (millis() - timeDateChange > timeDateChangeIntervalMillis) {
@@ -59,6 +62,15 @@ void loop() {
 		Serial.print(nowTimeInfo->tm_min);
 		Serial.print(":");
 		Serial.println(nowTimeInfo->tm_sec);
+
+		if (digit++ >= 9) {
+			digit = 1;
+		}
+
+		tft.pushImage(0, 0, 135, 240, getDigitImage(digit));
+
+
+
 	}
 }
 
@@ -141,7 +153,7 @@ void RefreshTime() {
 }
 
 void InitPorts() {
-	pinMode(LED_BUILTIN, OUTPUT);		
+	pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void InitTft() {
@@ -152,5 +164,44 @@ void InitTft() {
 
 	tft.fillScreen(TFT_BLACK);
 
-	tft.pushImage(0, 0, 240, 240, girls);
+	/*tft.pushImage(0, 0, 240, 240, girls);*/
+}
+
+const uint16_t* getDigitImage(uint16_t digit) {
+	switch (digit)
+	{
+	/*case 0:
+		return dig_0;*/
+
+	case 1:
+		return dig_1;
+
+	case 2:
+		return dig_2;
+
+	case 3:
+		return dig_3;
+
+	case 4:
+		return dig_4;
+
+	case 5:
+		return dig_5;
+
+	case 6:
+		return dig_6;
+
+	case 7:
+		return dig_7;
+
+	case 8:
+		return dig_8;
+
+	case 9:
+		return dig_9;
+
+	default:
+		return dig_8;
+		break;
+	}
 }
