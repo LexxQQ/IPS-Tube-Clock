@@ -23,3 +23,5 @@ String OPEN_WEATHER_MAP_LANGUAGE = "ua";
 
 #include <TZ.h>
 #define Timezone			TZ_Europe_Kiev		// (utc+) TZ in hours //  in 
+
+#define TFT_BRIGHTNESS	128 // 0-255
