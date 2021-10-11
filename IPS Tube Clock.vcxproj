@@ -112,6 +112,9 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="__vm\.IPS Tube Clock.vsarduino.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Info\Faces\IV-2\0.jpg" />
+  </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>
   </PropertyGroup>
