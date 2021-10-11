@@ -86,18 +86,16 @@ void loop() {
 
 		//tft.pushImage(0, 0, 135, 240, getDigitImageJpg(digit));
 
-		// TJpgDec.getJpgSize(&w, &h, panda, sizeof(panda));
-		//TJpgDec.drawJpg(0, 0, dig_1_jpg, sizeof(dig_1_jpg)); // Draw the image, top left at 0,0
+		uint8_t sec0 = nowTimeInfo->tm_sec / 10;
+		uint8_t sec1 = nowTimeInfo->tm_sec % 10;
 
-		TJpgDec.drawJpg(0, 0, GetDigitImage(digit), GetDigitSize(digit));
+		TJpgDec.drawJpg(0, 0, GetDigitImage(sec0), GetDigitSize(sec0));
+		/*tft.setFreeFont(FSB9);
+		tft.drawString(GetDateString(nowTimeInfo), 0, 0);*/
 
-		tft.setFreeFont(FSB9);
-		tft.drawString(GetDateString(nowTimeInfo), 140, 50);
-
-		tft.setFreeFont(FM9);
-		tft.drawString(GetTimeString(nowTimeInfo), 140, 80);
-
-
+		TJpgDec.drawJpg(135, 0, GetDigitImage(sec1), GetDigitSize(sec1));
+		/*tft.setFreeFont(FM9);
+		tft.drawString(GetTimeString(nowTimeInfo), 135, 0);*/
 	}
 }
 
@@ -169,7 +167,8 @@ void InitWifi() {
 	//	counter++;
 	//}	
 
-	tft.pushImage(200, 10, 24, 19, wifi_ok_24x19);
+	/*tft.pushImage(200, 10, 24, 19, wifi_ok_24x19);*/
+	TJpgDec.drawJpg(214, 2, wifi_ok_jpg_24x19, sizeof(wifi_ok_jpg_24x19));
 }
 
 void RefreshTime() {
@@ -207,47 +206,9 @@ void InitTft() {
 	// tft.pushImage(200, 10, 24, 19, girls_bmp_240x240);
 	TJpgDec.drawJpg(0, 0, girls_jpg_240x240, sizeof(girls_jpg_240x240));
 
-	tft.pushImage(200, 10, 24, 19, wifi_nok_24x19);
+	/*tft.pushImage(200, 10, 24, 19, wifi_nok_24x19);*/
+	TJpgDec.drawJpg(214, 2, wifi_nok_jpg_24x19, sizeof(wifi_nok_jpg_24x19));
 }
-
-//const uint16_t* getDigitImage(uint16_t digit) {
-//	switch (digit)
-//	{
-//		/*case 0:
-//			return dig_0;*/
-//
-//	case 1:
-//		return dig_1;
-//
-//	case 2:
-//		return dig_2;
-//
-//	case 3:
-//		return dig_3;
-//
-//	case 4:
-//		return dig_4;
-//
-//	case 5:
-//		return dig_5;
-//
-//	case 6:
-//		return dig_6;
-//
-//	case 7:
-//		return dig_7;
-//
-//	case 8:
-//		return dig_8;
-//
-//	case 9:
-//		return dig_9;
-//
-//	default:
-//		return dig_8;
-//		break;
-//	}
-//}
 
 const uint8_t* GetDigitImage(uint8_t digit) {
 	switch (digit)
