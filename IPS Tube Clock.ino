@@ -5,8 +5,11 @@
 */
 
 #include "Settings.h"
-//#include "Images.h"
+#include "Images.h"
 #include "iv-2.h"
+
+// Include the jpeg decoder library
+#include <TJpg_Decoder.h>
 
 #pragma region time
 #include <time.h>                       // time() ctime()
@@ -27,6 +30,7 @@ struct tm* nowTimeInfo;
 
 #pragma region TFT
 #include <TFT_eSPI.h>
+#include "Free_Fonts.h" // Include the header file attached to this sketch
 TFT_eSPI tft = TFT_eSPI();
 #pragma endregion
 
@@ -34,6 +38,19 @@ TFT_eSPI tft = TFT_eSPI();
 long timeDateChange = 0;
 const long timeDateChangeIntervalMillis = 1 * 1000L; // sec * 1000L
 #pragma endregion
+
+// This next function will be called during decoding of the jpeg file to
+// render each block to the TFT.  If you use a different TFT library
+// you will need to adapt this function to suit.
+bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
+{
+	if (y >= tft.height()) return 0; // Stop further decoding as image is running off bottom of screen	
+	tft.pushImage(x, y, w, h, bitmap); // This function will clip the image block rendering automatically at the TFT boundaries
+
+									   // This might work instead if you adapt the sketch to use the Adafruit_GFX library
+									   // tft.drawRGBBitmap(x, y, bitmap, w, h);	
+	return 1; // Return 1 to decode next block
+}
 
 void setup(void) {
 	Serial.begin(9600);
@@ -49,7 +66,7 @@ void setup(void) {
 	delay(1000);
 }
 
-uint16_t digit = 1;
+uint8_t digit = 0;
 
 void loop() {
 	if (millis() - timeDateChange > timeDateChangeIntervalMillis) {
@@ -63,12 +80,22 @@ void loop() {
 		Serial.print(":");
 		Serial.println(nowTimeInfo->tm_sec);
 
-		if (digit++ >= 9) {
+		if (digit++ > 9) {
 			digit = 1;
 		}
 
-		tft.pushImage(0, 0, 135, 240, getDigitImage(digit));
+		//tft.pushImage(0, 0, 135, 240, getDigitImageJpg(digit));
 
+		// TJpgDec.getJpgSize(&w, &h, panda, sizeof(panda));
+		//TJpgDec.drawJpg(0, 0, dig_1_jpg, sizeof(dig_1_jpg)); // Draw the image, top left at 0,0
+
+		TJpgDec.drawJpg(0, 0, GetDigitImage(digit), GetDigitSize(digit));
+
+		tft.setFreeFont(FSB9);
+		tft.drawString(GetDateString(nowTimeInfo), 140, 50);
+
+		tft.setFreeFont(FM9);
+		tft.drawString(GetTimeString(nowTimeInfo), 140, 80);
 
 
 	}
@@ -141,6 +168,8 @@ void InitWifi() {
 
 	//	counter++;
 	//}	
+
+	tft.pushImage(200, 10, 24, 19, wifi_ok_24x19);
 }
 
 void RefreshTime() {
@@ -157,51 +186,193 @@ void InitPorts() {
 }
 
 void InitTft() {
+	// The jpeg image can be scaled by a factor of 1, 2, 4, or 8
+	TJpgDec.setJpgScale(1);
+
+	// The byte order can be swapped (set true for TFT_eSPI)
+	/*TJpgDec.setSwapBytes(true);*/
+
+	// The decoder must be given the exact name of the rendering function above
+	TJpgDec.setCallback(tft_output);
+
 	analogWrite(LED_BUILTIN, TFT_BRIGHTNESS); // 0-255
 
 	tft.begin();     // initialize a ST7789 chip
 	tft.setSwapBytes(true); // Swap the byte order for pushImage() - corrects endianness
 
+	// tft.setRotation(1);
+
 	tft.fillScreen(TFT_BLACK);
 
-	/*tft.pushImage(0, 0, 240, 240, girls);*/
+	// tft.pushImage(200, 10, 24, 19, girls_bmp_240x240);
+	TJpgDec.drawJpg(0, 0, girls_jpg_240x240, sizeof(girls_jpg_240x240));
+
+	tft.pushImage(200, 10, 24, 19, wifi_nok_24x19);
 }
 
-const uint16_t* getDigitImage(uint16_t digit) {
+//const uint16_t* getDigitImage(uint16_t digit) {
+//	switch (digit)
+//	{
+//		/*case 0:
+//			return dig_0;*/
+//
+//	case 1:
+//		return dig_1;
+//
+//	case 2:
+//		return dig_2;
+//
+//	case 3:
+//		return dig_3;
+//
+//	case 4:
+//		return dig_4;
+//
+//	case 5:
+//		return dig_5;
+//
+//	case 6:
+//		return dig_6;
+//
+//	case 7:
+//		return dig_7;
+//
+//	case 8:
+//		return dig_8;
+//
+//	case 9:
+//		return dig_9;
+//
+//	default:
+//		return dig_8;
+//		break;
+//	}
+//}
+
+const uint8_t* GetDigitImage(uint8_t digit) {
 	switch (digit)
 	{
-	/*case 0:
-		return dig_0;*/
+	case 0:
+		return dig_0_jpg;
 
 	case 1:
-		return dig_1;
+		return dig_1_jpg;
 
 	case 2:
-		return dig_2;
+		return dig_2_jpg;
 
 	case 3:
-		return dig_3;
+		return dig_3_jpg;
 
 	case 4:
-		return dig_4;
+		return dig_4_jpg;
 
 	case 5:
-		return dig_5;
+		return dig_5_jpg;
 
 	case 6:
-		return dig_6;
+		return dig_6_jpg;
 
 	case 7:
-		return dig_7;
+		return dig_7_jpg;
 
 	case 8:
-		return dig_8;
+		return dig_8_jpg;
 
 	case 9:
-		return dig_9;
+		return dig_9_jpg;
 
 	default:
-		return dig_8;
+		return dig_0_jpg;
 		break;
 	}
+}
+
+int GetDigitSize(uint8_t digit) {
+	switch (digit)
+	{
+	case 0:
+		return sizeof(dig_0_jpg);
+
+	case 1:
+		return sizeof(dig_1_jpg);
+
+	case 2:
+		return sizeof(dig_2_jpg);
+
+	case 3:
+		return sizeof(dig_3_jpg);
+
+	case 4:
+		return sizeof(dig_4_jpg);
+
+	case 5:
+		return sizeof(dig_5_jpg);
+
+	case 6:
+		return sizeof(dig_6_jpg);
+
+	case 7:
+		return sizeof(dig_7_jpg);
+
+	case 8:
+		return sizeof(dig_8_jpg);
+
+	case 9:
+		return sizeof(dig_9_jpg);
+
+	default:
+		return sizeof(dig_0_jpg);
+		break;
+	}
+}
+
+String GetTimeString(struct tm* timeInfo) {
+	String result = "";
+
+	if (timeInfo->tm_hour < 10) {
+		result += "0";
+	}
+	result += String(timeInfo->tm_hour);
+
+	result += ":";
+
+	if (timeInfo->tm_min < 10) {
+		result += "0";
+	}
+	result += String(timeInfo->tm_min);
+
+	result += ":";
+
+	if (timeInfo->tm_sec < 10) {
+		result += "0";
+	}
+	result += String(timeInfo->tm_sec);
+
+	return result;
+}
+
+String GetDateString(struct tm* timeInfo) {
+	String result = "";
+
+	if (timeInfo->tm_mday < 10) {
+		result += "0";
+	}
+	result += String(timeInfo->tm_mday);
+
+	result += ".";
+
+	if ((1 + timeInfo->tm_mon) < 10) {
+		result += "0";
+	}
+	result += String(1 + timeInfo->tm_mon);
+
+	result += ".";
+
+	if (timeInfo->tm_year < 10) {
+		result += "0";
+	}
+	result += String(1900 + timeInfo->tm_year);
+
+	return result;
 }
