@@ -39,19 +39,6 @@ long timeDateChange = 0;
 const long timeDateChangeIntervalMillis = 1 * 1000L; // sec * 1000L
 #pragma endregion
 
-// This next function will be called during decoding of the jpeg file to
-// render each block to the TFT.  If you use a different TFT library
-// you will need to adapt this function to suit.
-bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
-{
-	if (y >= tft.height()) return 0; // Stop further decoding as image is running off bottom of screen	
-	tft.pushImage(x, y, w, h, bitmap); // This function will clip the image block rendering automatically at the TFT boundaries
-
-									   // This might work instead if you adapt the sketch to use the Adafruit_GFX library
-									   // tft.drawRGBBitmap(x, y, bitmap, w, h);	
-	return 1; // Return 1 to decode next block
-}
-
 void setup(void) {
 	Serial.begin(9600);
 	Serial.print(F("IPS Tube Clock - sutup..."));
@@ -66,8 +53,6 @@ void setup(void) {
 	delay(1000);
 }
 
-uint8_t digit = 0;
-
 void loop() {
 	if (millis() - timeDateChange > timeDateChangeIntervalMillis) {
 		timeDateChange = millis();
@@ -79,12 +64,6 @@ void loop() {
 		Serial.print(nowTimeInfo->tm_min);
 		Serial.print(":");
 		Serial.println(nowTimeInfo->tm_sec);
-
-		if (digit++ > 9) {
-			digit = 1;
-		}
-
-		//tft.pushImage(0, 0, 135, 240, getDigitImageJpg(digit));
 
 		uint8_t sec0 = nowTimeInfo->tm_sec / 10;
 		uint8_t sec1 = nowTimeInfo->tm_sec % 10;
@@ -99,6 +78,22 @@ void loop() {
 	}
 }
 
+#pragma region tft_output
+// This next function will be called during decoding of the jpeg file to
+// render each block to the TFT.  If you use a different TFT library
+// you will need to adapt this function to suit.
+bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
+{
+	if (y >= tft.height()) return 0; // Stop further decoding as image is running off bottom of screen	
+	tft.pushImage(x, y, w, h, bitmap); // This function will clip the image block rendering automatically at the TFT boundaries
+
+									   // This might work instead if you adapt the sketch to use the Adafruit_GFX library
+									   // tft.drawRGBBitmap(x, y, bitmap, w, h);	
+	return 1; // Return 1 to decode next block
+}
+#pragma endregion
+
+#pragma region configModeCallback
 // gets called when WiFiManager enters configuration mode
 void configModeCallback(WiFiManager* myWiFiManager) {
 	Serial.println("Entered config mode");
@@ -108,7 +103,9 @@ void configModeCallback(WiFiManager* myWiFiManager) {
 
 	// ticker.attach(0.2, tick); // entered config mode, make led toggle faster
 }
+#pragma endregion
 
+#pragma region InitWifi
 void InitWifi() {
 	/*WiFi.begin(WIFI_SSID, WIFI_PWD);*/
 	WiFi.mode(WIFI_OFF);        //Prevents reconnection issue (taking too long to connect)
@@ -170,20 +167,15 @@ void InitWifi() {
 	/*tft.pushImage(200, 10, 24, 19, wifi_ok_24x19);*/
 	TJpgDec.drawJpg(214, 2, wifi_ok_jpg_24x19, sizeof(wifi_ok_jpg_24x19));
 }
+#pragma endregion
 
-void RefreshTime() {
-	// configTime(TZ_SEC, DST_SEC, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
-	// configTime(TZ_Etc_GMTp3, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
-	configTime(Timezone, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
-
-	nowTime = time(nullptr);
-	nowTimeInfo = localtime(&nowTime);
-}
-
+#pragma region InitPorts
 void InitPorts() {
 	pinMode(LED_BUILTIN, OUTPUT);
 }
+#pragma endregion
 
+#pragma region InitTft
 void InitTft() {
 	// The jpeg image can be scaled by a factor of 1, 2, 4, or 8
 	TJpgDec.setJpgScale(1);
@@ -209,7 +201,20 @@ void InitTft() {
 	/*tft.pushImage(200, 10, 24, 19, wifi_nok_24x19);*/
 	TJpgDec.drawJpg(214, 2, wifi_nok_jpg_24x19, sizeof(wifi_nok_jpg_24x19));
 }
+#pragma endregion
 
+#pragma region RefreshTime
+void RefreshTime() {
+	// configTime(TZ_SEC, DST_SEC, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+	// configTime(TZ_Etc_GMTp3, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+	configTime(Timezone, "europe.pool.ntp.org", "time.nist.gov");	// Get time from network time service
+
+	nowTime = time(nullptr);
+	nowTimeInfo = localtime(&nowTime);
+}
+#pragma endregion
+
+#pragma region GetDigitImage
 const uint8_t* GetDigitImage(uint8_t digit) {
 	switch (digit)
 	{
@@ -248,7 +253,9 @@ const uint8_t* GetDigitImage(uint8_t digit) {
 		break;
 	}
 }
+#pragma endregion
 
+#pragma region GetDigitSize
 int GetDigitSize(uint8_t digit) {
 	switch (digit)
 	{
@@ -287,7 +294,9 @@ int GetDigitSize(uint8_t digit) {
 		break;
 	}
 }
+#pragma endregion
 
+#pragma region GetTimeString
 String GetTimeString(struct tm* timeInfo) {
 	String result = "";
 
@@ -312,7 +321,9 @@ String GetTimeString(struct tm* timeInfo) {
 
 	return result;
 }
+#pragma endregion
 
+#pragma region GetDateString
 String GetDateString(struct tm* timeInfo) {
 	String result = "";
 
@@ -337,3 +348,4 @@ String GetDateString(struct tm* timeInfo) {
 
 	return result;
 }
+#pragma endregion
