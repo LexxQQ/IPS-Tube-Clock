@@ -1,3 +1,4 @@
+#pragma once
 #include <pgmspace.h>
 
 const uint8_t girls_jpg_240x240[] PROGMEM = {

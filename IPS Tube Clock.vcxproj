@@ -108,12 +108,13 @@
   <ItemGroup>
     <ClInclude Include="Free_Fonts.h" />
     <ClInclude Include="Images.h" />
+    <ClInclude Include="in-14.h" />
     <ClInclude Include="iv-2.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="__vm\.IPS Tube Clock.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Info\Faces\IV-2\0.jpg" />
+    <Image Include="Info\Faces\iv-2\0.jpg" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

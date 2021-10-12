@@ -25,4 +25,4 @@ String OPEN_WEATHER_MAP_LANGUAGE = "ua";
 //#define Timezone			TZ_Europe_Kiev		// (utc+) TZ in hours //  in 
 #define Timezone			PSTR("EET-2EEST,M3.5.0/3,M10.5.0/4")		// (utc+) TZ in hours //  in 
 
-#define TFT_BRIGHTNESS	254 // 0-255
+#define TFT_BRIGHTNESS	128 // 0-255
