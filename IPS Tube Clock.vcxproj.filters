@@ -36,6 +36,9 @@
     <ClInclude Include="in-14.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="z568m.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Info\Faces\iv-2\0.jpg">

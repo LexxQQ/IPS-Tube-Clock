@@ -111,6 +111,7 @@
     <ClInclude Include="in-14.h" />
     <ClInclude Include="iv-2.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="z568m.h" />
     <ClInclude Include="__vm\.IPS Tube Clock.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
