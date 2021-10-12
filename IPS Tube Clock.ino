@@ -7,8 +7,8 @@
 #include "Settings.h"
 #include "Images.h"
 //#include "iv-2.h"
-//#include "in-14.h"
-#include "z568m.h"
+#include "in-14.h"
+//#include "z568m.h"
 
 // Include the jpeg decoder library
 #include <TJpg_Decoder.h>
