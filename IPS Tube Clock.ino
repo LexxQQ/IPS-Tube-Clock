@@ -31,6 +31,10 @@ struct tm* nowTimeInfo;
 #pragma endregion
 
 #pragma region TFT
+/*
+	D:\Projects\Arduino\libraries\TFT_eSPI
+	User_Setup_Select.h: 
+*/
 #include <TFT_eSPI.h>
 #include "Free_Fonts.h" // Include the header file attached to this sketch
 TFT_eSPI tft = TFT_eSPI();
@@ -40,45 +44,6 @@ TFT_eSPI tft = TFT_eSPI();
 long timeDateChange = 0;
 const long timeDateChangeIntervalMillis = 1 * 1000L; // sec * 1000L
 #pragma endregion
-
-void setup(void) {
-	Serial.begin(9600);
-	Serial.print(F("IPS Tube Clock - sutup..."));
-
-	InitPorts();
-
-	InitTft();
-
-	InitWifi();
-
-	Serial.println("done");
-	delay(1000);
-}
-
-void loop() {
-	if (millis() - timeDateChange > timeDateChangeIntervalMillis) {
-		timeDateChange = millis();
-		/* code */
-		RefreshTime();
-
-		Serial.print(nowTimeInfo->tm_hour);
-		Serial.print(":");
-		Serial.print(nowTimeInfo->tm_min);
-		Serial.print(":");
-		Serial.println(nowTimeInfo->tm_sec);
-
-		uint8_t sec0 = nowTimeInfo->tm_sec / 10;
-		uint8_t sec1 = nowTimeInfo->tm_sec % 10;
-
-		TJpgDec.drawJpg(0, 0, GetDigitImage(sec0), GetDigitSize(sec0));
-		/*tft.setFreeFont(FSB9);
-		tft.drawString(GetDateString(nowTimeInfo), 0, 0);*/
-
-		TJpgDec.drawJpg(135, 0, GetDigitImage(sec1), GetDigitSize(sec1));
-		/*tft.setFreeFont(FM9);
-		tft.drawString(GetTimeString(nowTimeInfo), 135, 0);*/
-	}
-}
 
 #pragma region tft_output
 // This next function will be called during decoding of the jpeg file to
@@ -174,19 +139,22 @@ void InitWifi() {
 #pragma region InitPorts
 void InitPorts() {
 	pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(PIN_D2, OUTPUT);
+
+	//pinMode(test0, OUTPUT);
+	pinMode(test1, OUTPUT);
+	//pinMode(test2, OUTPUT);
+	//pinMode(test3, OUTPUT);
 }
 #pragma endregion
 
 #pragma region InitTft
 void InitTft() {
-	// The jpeg image can be scaled by a factor of 1, 2, 4, or 8
-	TJpgDec.setJpgScale(1);
+	TJpgDec.setJpgScale(1); // The jpeg image can be scaled by a factor of 1, 2, 4, or 8
 
-	// The byte order can be swapped (set true for TFT_eSPI)
-	/*TJpgDec.setSwapBytes(true);*/
-
-	// The decoder must be given the exact name of the rendering function above
-	TJpgDec.setCallback(tft_output);
+	/*TJpgDec.setSwapBytes(true);*/ // The byte order can be swapped (set true for TFT_eSPI)
+	
+	TJpgDec.setCallback(tft_output); // The decoder must be given the exact name of the rendering function above
 
 	analogWrite(LED_BUILTIN, TFT_BRIGHTNESS); // 0-255
 
@@ -351,3 +319,49 @@ String GetDateString(struct tm* timeInfo) {
 	return result;
 }
 #pragma endregion
+
+void setup(void) {
+	Serial.begin(9600);
+	Serial.print(F("IPS Tube Clock - sutup..."));
+
+	InitPorts();
+
+	InitTft();
+
+	InitWifi();
+
+	Serial.println("done");
+	delay(1000);
+}
+
+void loop() {
+	if (millis() - timeDateChange > timeDateChangeIntervalMillis) {
+		timeDateChange = millis();
+		/* code */
+		RefreshTime();
+
+		Serial.print(nowTimeInfo->tm_hour);
+		Serial.print(":");
+		Serial.print(nowTimeInfo->tm_min);
+		Serial.print(":");
+		Serial.println(nowTimeInfo->tm_sec);
+
+		uint8_t sec0 = nowTimeInfo->tm_sec / 10;
+		uint8_t sec1 = nowTimeInfo->tm_sec % 10;
+
+		TJpgDec.drawJpg(0, 0, GetDigitImage(sec0), GetDigitSize(sec0));
+		/*tft.setFreeFont(FSB9);
+		tft.drawString(GetDateString(nowTimeInfo), 0, 0);*/
+
+		TJpgDec.drawJpg(135, 0, GetDigitImage(sec1), GetDigitSize(sec1));
+		/*tft.setFreeFont(FM9);
+		tft.drawString(GetTimeString(nowTimeInfo), 135, 0);*/
+
+		//digitalWrite(TFT0_CS, !digitalRead(TFT0_CS));
+
+		//digitalWrite(test0, !digitalRead(test0));
+		digitalWrite(test1, !digitalRead(test1));
+		//digitalWrite(test2, !digitalRead(test2));
+		//digitalWrite(test3, !digitalRead(test3));
+	}
+}

@@ -26,3 +26,14 @@ String OPEN_WEATHER_MAP_LANGUAGE = "ua";
 #define Timezone			PSTR("EET-2EEST,M3.5.0/3,M10.5.0/4")		// (utc+) TZ in hours //  in 
 
 #define TFT_BRIGHTNESS	128 // 0-255
+
+//				D0 - RESET
+//				D1 - D/C
+#define TFT0_CS	D2
+//				D5 - SCK
+//				D7 - SDA (MOSI)
+
+//#define test0	A0
+#define test1	D3 //+
+//#define test2	D6
+//#define test3	D8
